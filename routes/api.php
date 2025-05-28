@@ -3,13 +3,15 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\RequireAuthorizationHeader;
 
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 
 //    Route::apiResource('posts', PostController::class)->middleware('auth:sanctum');
-    Route::middleware('auth:sanctum')->group(function () {
+//    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(RequireAuthorizationHeader::class)->group(function () {
         Route::get('/posts', [PostController::class, 'index']);
         Route::post('/posts', [PostController::class, 'store']);
         Route::get('/posts/{post_id}', [PostController::class, 'show']);
