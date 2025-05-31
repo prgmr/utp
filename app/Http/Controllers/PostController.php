@@ -17,8 +17,9 @@ class PostController
     {
         $perPage = request()->input('per_page', 15);
         $page = request()->input('page', 1);
+        $fields = explode(',', $request->input('fields', 'id,title,content,author_id,status,created_at'));
 
-        $query = Post::query()->select(['id', 'title', 'content', 'author_id', 'status', 'created_at']);
+        $query = Post::query()->select($fields);
 
         if ($request->has('filter')) {
             foreach ($request->filter as $field => $value) {
@@ -58,14 +59,16 @@ class PostController
     /**
      * Display the specified resource.
      */
-    public function show(int $post_id)
+    public function show(Request $request, int $post_id)
     {
+        $fields = explode(',', $request->input('fields', 'id,title,content,author_id,status,created_at'));
+
         try {
             $post = Post::findOrFail($post_id);
         } catch (ModelNotFoundException $exception) {
             return response()->json(['errors' => "Post with id {$post_id} not found"], Response::HTTP_NOT_FOUND);
         }
-        return response()->json($post->only(['id', 'title', 'content', 'author_id', 'status', 'created_at', 'updated_at']));
+        return response()->json($post->only($fields));
     }
 
     /**
