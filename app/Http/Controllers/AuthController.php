@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -47,9 +46,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'message' => ['Invalid credentials'],
-            ]);
+            return response()->json(['error' => 'Invalid user or credentials'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
