@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Post extends Model
 {
@@ -21,5 +22,16 @@ class Post extends Model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::flush();
+        });
+
+        static::deleted(function () {
+            Cache::flush();
+        });
     }
 }

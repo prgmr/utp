@@ -7,6 +7,7 @@ use App\Models\Post;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -17,23 +18,35 @@ class PostController
      */
     public function index(Request $request)
     {
-        $perPage = request()->input('per_page', 15);
-        $page = request()->input('page', 1);
-        $query = Post::query();
+        $perPage = $request->get('per_page', 15);
+        $page = $request->get('page', 1);
 
-        if ($request->has('filter')) {
-            foreach ($request->filter as $field => $value) {
-                $query->where($field, 'like', "%$value%");
+        $cacheKey = 'posts:' . md5(json_encode([
+                'per_page' => $perPage,
+                'page' => $page,
+                'filter' => $request->filter,
+                'sort' => $request->sort,
+                'order' => $request->order,
+            ]));
+
+        $posts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($request, $perPage, $page) {
+            $query = Post::query();
+
+            if ($request->has('filter')) {
+                foreach ($request->filter as $field => $value) {
+                    $query->where($field, 'like', "%$value%");
+                }
             }
-        }
 
-        if ($request->has('sort')) {
-            $direction = $request->get('order', 'asc');
-            $query->orderBy($request->sort, $direction);
-        }
+            if ($request->has('sort')) {
+                $direction = $request->get('order', 'asc');
+                $query->orderBy($request->sort, $direction);
+            }
 
-        $posts = $query->paginate($perPage, ['*'], 'page', $page);
-        return PostResource::collection($posts)->response();
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        });
+
+        return PostResource::collection($posts);
     }
 
     /**
