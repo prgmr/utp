@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Rules\UniqueImageRule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -49,6 +50,7 @@ class PostController
                 'author_id' => 'required|integer',
                 'status' => 'required|integer',
                 'image' => 'nullable|file|image|mimes:jpeg,png,jpg|max:2048',
+//                'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048', new UniqueImageRule()], // TODO
             ]);
         } catch (ValidationException $exception) {
             return response()->json(['errors' => $exception->validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
