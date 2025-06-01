@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Models\Post;
-use App\Rules\UniqueImageRule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -19,9 +19,7 @@ class PostController
     {
         $perPage = request()->input('per_page', 15);
         $page = request()->input('page', 1);
-        $fields = explode(',', $request->input('fields', 'id,title,content,author_id,status,image,created_at'));
-
-        $query = Post::query()->select($fields);
+        $query = Post::query();
 
         if ($request->has('filter')) {
             foreach ($request->filter as $field => $value) {
@@ -35,7 +33,7 @@ class PostController
         }
 
         $posts = $query->paginate($perPage, ['*'], 'page', $page);
-        return response()->json($posts);
+        return PostResource::collection($posts)->response();
     }
 
     /**
