@@ -27,8 +27,9 @@ php artisan storage:link
 
 php artisan user:create
 php artisan test
-php artisan serve
 ```
+
+`php artisan serve` - запуск приложения
 
 ### 2. Справка по всем методам в API
 
